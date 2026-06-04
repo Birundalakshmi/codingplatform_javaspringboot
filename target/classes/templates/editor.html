@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor — Coding Arena</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="overflow:hidden">
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-text">Coding Arena</span>
+        </a>
+        <div class="nav-links">
+            <a href="#" onclick="navigateTo('/dashboard')" class="nav-link">Dashboard</a>
+            <a href="#" onclick="navigateTo('/problems')" class="nav-link">Problems</a>
+            <a href="#" onclick="navigateTo('/leaderboard')" class="nav-link">Leaderboard</a>
+            <a href="/" class="nav-link">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="editor-page">
+    <div class="editor-container">
+
+        <!-- ── Problem Panel ── -->
+        <div class="problem-panel">
+            <div class="problem-panel-header">
+                <h2 id="problemTitle"
+                    th:text="${selectedProblem != null ? selectedProblem.title : 'Select a Problem'}">
+                    Select a Problem
+                </h2>
+                <span th:if="${selectedProblem != null}"
+                      class="difficulty-badge"
+                      th:classappend="${selectedProblem.difficulty == 'EASY' ? 'difficulty-easy' : selectedProblem.difficulty == 'MEDIUM' ? 'difficulty-medium' : 'difficulty-hard'}"
+                      th:text="${selectedProblem.difficulty}">
+                </span>
+            </div>
+
+            <div class="problem-body">
+                <div th:if="${selectedProblem != null}">
+                    <div class="problem-meta">
+                        <span style="font-size:0.78rem;color:var(--text-muted);background:var(--bg-secondary);padding:0.2rem 0.6rem;border-radius:6px;"
+                              th:text="'📂 ' + ${selectedProblem.category}"></span>
+                    </div>
+                    <p class="problem-desc" th:text="${selectedProblem.description}"></p>
+
+                    <div class="problem-section-title">Example Test Cases</div>
+                    <div class="test-case-box" th:text="${selectedProblem.testCases}"></div>
+                </div>
+                <div th:if="${selectedProblem == null}" class="no-data" style="padding:2rem 0">
+                    Pick a problem from the dropdown below to begin.
+                </div>
+            </div>
+
+            <div class="problem-controls">
+                <label>Switch Problem</label>
+                <select id="problemSelect">
+                    <option value="">— Choose a problem —</option>
+                    <option th:each="problem : ${problems}"
+                            th:value="${problem.id}"
+                            th:text="${problem.title + ' (' + problem.difficulty + ')'}"
+                            th:selected="${selectedProblem != null and selectedProblem.id == problem.id}">
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <!-- ── Code Panel ── -->
+        <div class="code-panel">
+            <div class="editor-toolbar">
+                <div class="editor-filename">
+                    <span class="editor-dot dot-red"></span>
+                    <span class="editor-dot dot-yellow"></span>
+                    <span class="editor-dot dot-green"></span>
+                    <span style="margin-left:0.5rem" id="filenameLabel">Solution.java</span>
+                </div>
+                <div class="editor-actions">
+                    <select id="language" class="language-select" onchange="changeLanguage()">
+                        <option value="java">☕ Java</option>
+                        <option value="python">🐍 Python</option>
+                        <option value="cpp">⚙️ C++</option>
+                        <option value="c">🔧 C</option>
+                    </select>
+                    <button onclick="runCode()" class="btn btn-secondary">▶ Run</button>
+                    <button onclick="clearEditor()" class="btn btn-warning">⊘ Clear</button>
+                    <button onclick="submitCode()" class="btn btn-green">✔ Submit</button>
+                </div>
+            </div>
+
+            <textarea id="codeEditor" spellcheck="false" placeholder="// Write your solution here..."></textarea>
+
+            <div class="output-panel">
+                <div class="output-tabs">
+                    <div class="output-tab active">Output</div>
+                </div>
+                <div id="output" style="color:var(--text-muted)">
+                    Click <strong style="color:var(--text-primary)">▶ Run</strong> to test your code,
+                    or <strong style="color:var(--green)">✔ Submit</strong> to evaluate all test cases.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="/js/editor.js"></script>
+<script>
+    // Update filename label when language changes
+    var langFiles = { java:'Solution.java', python:'solution.py', cpp:'solution.cpp', c:'solution.c' };
+    document.getElementById('language').addEventListener('change', function() {
+        var lbl = document.getElementById('filenameLabel');
+        if (lbl) lbl.textContent = langFiles[this.value] || 'Solution.java';
+    });
+</script>
+</body>
+</html>

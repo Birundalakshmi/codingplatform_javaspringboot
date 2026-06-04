@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Coding Arena</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-text">Coding Arena</span>
+        </a>
+        <div class="nav-links">
+            <a href="#" onclick="nav('/dashboard')" class="nav-link active">Dashboard</a>
+            <a href="#" onclick="nav('/problems')" class="nav-link">Problems</a>
+            <a href="#" onclick="nav('/editor')" class="nav-link">Editor</a>
+            <a href="#" onclick="nav('/leaderboard')" class="nav-link">Leaderboard</a>
+            <a href="/" class="nav-link">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<main class="dashboard">
+    <div class="container">
+
+        <div class="welcome-banner">
+            <div class="user-avatar" id="avatarEl">S</div>
+            <div class="welcome-info">
+                <h1 th:text="'Hey, ' + (${username} ?: 'Coder') + '! 👋'">Hey, Coder! 👋</h1>
+                <p>Ready to solve today's challenge?</p>
+            </div>
+        </div>
+
+        <div class="dashboard-stats">
+            <div class="stat-card stat-blue">
+                <div class="stat-card-top">
+                    <span class="stat-label">Problems Solved</span>
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-num" id="statSolved">—</div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-card-top">
+                    <span class="stat-label">Submissions</span>
+                    <div class="stat-icon">📤</div>
+                </div>
+                <div class="stat-num" id="statTotal">—</div>
+            </div>
+            <div class="stat-card stat-purple">
+                <div class="stat-card-top">
+                    <span class="stat-label">Total Score</span>
+                    <div class="stat-icon">🏆</div>
+                </div>
+                <div class="stat-num" id="statScore">—</div>
+            </div>
+            <div class="stat-card stat-orange">
+                <div class="stat-card-top">
+                    <span class="stat-label">Accuracy</span>
+                    <div class="stat-icon">📊</div>
+                </div>
+                <div class="stat-num" id="statAcc">—</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Recent Submissions</span>
+                    <a href="#" onclick="nav('/problems')" class="btn btn-ghost">View all →</a>
+                </div>
+                <div class="card-body" id="submissionsList">
+                    <div class="no-data">Loading…</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><span class="card-title">Quick Actions</span></div>
+                <div class="card-body">
+                    <div class="quick-actions">
+                        <a href="#" onclick="nav('/problems')" class="action-btn">
+                            <div class="action-icon">📋</div>
+                            Browse Problems
+                        </a>
+                        <a href="#" onclick="nav('/editor')" class="action-btn">
+                            <div class="action-icon">💻</div>
+                            Open Code Editor
+                        </a>
+                        <a href="#" onclick="nav('/leaderboard')" class="action-btn">
+                            <div class="action-icon">🏆</div>
+                            View Leaderboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script>
+    const p = new URLSearchParams(window.location.search);
+    const username = /*[[${username}]]*/ p.get('username') || 'student';
+    const role     = /*[[${userRole}]]*/ p.get('role')     || 'STUDENT';
+
+    function nav(path) { window.location.href = path + '?role=' + role + '&username=' + username; }
+
+    const el = document.getElementById('avatarEl');
+    if (el) el.textContent = username.charAt(0).toUpperCase();
+
+    const statusMap = {
+        ACCEPTED:'badge-accepted', WRONG_ANSWER:'badge-wrong',
+        COMPILATION_ERROR:'badge-compile', RUNTIME_ERROR:'badge-runtime',
+        TIME_LIMIT_EXCEEDED:'badge-tle'
+    };
+
+    fetch('/api/submissions/user?username=' + encodeURIComponent(username))
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(subs) {
+            var total    = subs.length;
+            var accepted = subs.filter(function(s){ return s.status === 'ACCEPTED'; }).length;
+            var unique   = new Set(subs.filter(function(s){ return s.status === 'ACCEPTED'; }).map(function(s){ return s.problem && s.problem.id; })).size;
+            var score    = subs.reduce(function(a,s){ return a + (s.score||0); }, 0);
+            var acc      = total > 0 ? Math.round(accepted / total * 100) : 0;
+
+            document.getElementById('statSolved').textContent = unique;
+            document.getElementById('statTotal').textContent  = total;
+            document.getElementById('statScore').textContent  = score;
+            document.getElementById('statAcc').textContent    = acc + '%';
+
+            var list = document.getElementById('submissionsList');
+            if (!subs.length) {
+                list.innerHTML = '<div class="no-data">No submissions yet.<br><a href="#" onclick="nav(\'/problems\')" style="color:var(--accent)">Solve your first problem →</a></div>';
+                return;
+            }
+            list.innerHTML = subs.slice(0, 8).map(function(s) {
+                var cls   = statusMap[s.status] || 'badge-compile';
+                var label = (s.status || '').replace(/_/g, ' ');
+                var title = s.problem ? s.problem.title : 'Problem';
+                var date  = s.submittedAt ? new Date(s.submittedAt).toLocaleDateString() : '';
+                var pts   = s.score ? ' · +' + s.score + ' pts' : '';
+                return '<div class="submission-item">'
+                    + '<div class="submission-info">'
+                    + '<div class="problem-title">' + title + '</div>'
+                    + '<div class="submission-meta">' + date + pts + '</div>'
+                    + '</div>'
+                    + '<span class="badge ' + cls + '">' + label + '</span>'
+                    + '</div>';
+            }).join('');
+        })
+        .catch(function() {
+            ['statSolved','statTotal','statScore','statAcc'].forEach(function(id){
+                document.getElementById(id).textContent = '0';
+            });
+            document.getElementById('submissionsList').innerHTML = '<div class="no-data">Could not load data.</div>';
+        });
+</script>
+</body>
+</html>

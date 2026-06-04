@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Dashboard — Coding Arena</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/mentor-styles.css">
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-text">Coding Arena</span>
+        </a>
+        <div class="nav-links">
+            <a th:href="@{/problems(role=${userRole},username=${username})}" class="nav-link">Problems</a>
+            <a th:href="@{/mentor(role=${userRole},username=${username})}" class="nav-link active">Mentor</a>
+            <a href="#" onclick="showPanel('addProblem', document.querySelector('[onclick*=addProblem]'))" class="nav-link">Add Problem</a>
+            <a th:href="@{/leaderboard(role=${userRole},username=${username})}" class="nav-link">Leaderboard</a>
+            <a href="#" onclick="logout()" class="nav-link">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<main class="mentor-page">
+    <div class="container">
+
+        <!-- Stats row -->
+        <div class="mentor-stats" style="margin-bottom:1.5rem">
+            <div class="stat-card stat-purple">
+                <div class="stat-card-top">
+                    <span class="stat-label">Total Problems</span>
+                    <div class="stat-icon">📋</div>
+                </div>
+                <div class="stat-num" th:text="${#lists.size(problems)}">0</div>
+            </div>
+            <div class="stat-card stat-blue">
+                <div class="stat-card-top">
+                    <span class="stat-label">Active Students</span>
+                    <div class="stat-icon">🎓</div>
+                </div>
+                <div class="stat-num" th:text="${studentCount}">0</div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-card-top">
+                    <span class="stat-label">Top Performers</span>
+                    <div class="stat-icon">🏆</div>
+                </div>
+                <div class="stat-num" th:text="${#lists.size(topStudents)}">0</div>
+            </div>
+        </div>
+
+        <!-- Layout -->
+        <div class="mentor-layout">
+
+            <!-- ── SIDEBAR ── -->
+            <div class="mentor-sidebar">
+                <div class="sidebar-profile">
+                    <div class="sidebar-avatar" id="mentorAvatar">M</div>
+                    <div class="sidebar-name" th:text="${username ?: 'Mentor'}">Mentor</div>
+                    <span class="sidebar-role">👨‍💻 Mentor</span>
+                </div>
+                <nav class="sidebar-nav">
+                    <button class="sidebar-nav-item active" onclick="showPanel('overview', this)">
+                        <div class="nav-item-icon">📊</div>
+                        Overview
+                    </button>
+                    <button class="sidebar-nav-item" onclick="showPanel('addProblem', this)">
+                        <div class="nav-item-icon">➕</div>
+                        Add Problem
+                    </button>
+                    <button class="sidebar-nav-item" onclick="showPanel('manageProblems', this)">
+                        <div class="nav-item-icon">📋</div>
+                        Manage Problems
+                    </button>
+                    <button class="sidebar-nav-item" onclick="showPanel('studentProgress', this)">
+                        <div class="nav-item-icon">🎓</div>
+                        Student Progress
+                    </button>
+                </nav>
+            </div>
+
+            <!-- ── CONTENT ── -->
+            <div class="mentor-content">
+
+                <!-- Overview Panel -->
+                <div class="mentor-panel active" id="panel-overview">
+                    <div class="panel-header">
+                        <div class="panel-title">📊 Overview</div>
+                    </div>
+                    <div class="panel-body">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                            <div class="action-btn" style="cursor:pointer" onclick="showPanel('addProblem', document.querySelector('[onclick*=addProblem]'))">
+                                <div class="action-icon" style="background:var(--accent-glow)">➕</div>
+                                <div>
+                                    <div style="font-weight:700;font-size:0.9rem">Add New Problem</div>
+                                    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.1rem">Create a new coding challenge</div>
+                                </div>
+                            </div>
+                            <div class="action-btn" style="cursor:pointer" onclick="showPanel('manageProblems', document.querySelector('[onclick*=manageProblems]'))">
+                                <div class="action-icon" style="background:var(--purple-glow)">📋</div>
+                                <div>
+                                    <div style="font-weight:700;font-size:0.9rem">Manage Problems</div>
+                                    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.1rem">Edit or remove existing problems</div>
+                                </div>
+                            </div>
+                            <div class="action-btn" style="cursor:pointer" onclick="showPanel('studentProgress', document.querySelector('[onclick*=studentProgress]'))">
+                                <div class="action-icon" style="background:var(--green-glow)">🎓</div>
+                                <div>
+                                    <div style="font-weight:700;font-size:0.9rem">Student Progress</div>
+                                    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.1rem">Track top & struggling students</div>
+                                </div>
+                            </div>
+                            <div class="action-btn" style="cursor:default">
+                                <div class="action-icon" style="background:var(--orange-glow)">💡</div>
+                                <div>
+                                    <div style="font-weight:700;font-size:0.9rem">Quick Tip</div>
+                                    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.1rem">Add 5 test cases per problem for best results</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Problem Panel -->
+                <div class="mentor-panel" id="panel-addProblem">
+                    <div class="panel-header">
+                        <div class="panel-title" id="addPanelTitle">➕ Add New Problem</div>
+                    </div>
+                    <div class="panel-body">
+                        <form class="mentor-form" id="problemForm" onsubmit="submitProblem(event)">
+                            <div class="form-group">
+                                <label>Problem Title</label>
+                                <input type="text" id="title" placeholder="e.g. Two Sum" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="description" rows="4" placeholder="Describe the problem clearly..." required></textarea>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Difficulty</label>
+                                    <select id="difficulty">
+                                        <option value="EASY">🟢 Easy</option>
+                                        <option value="MEDIUM">🟡 Medium</option>
+                                        <option value="HARD">🔴 Hard</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <input type="text" id="category" placeholder="e.g. Array, String, Math">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Test Input (one per line)</label>
+                                <textarea id="testInput" rows="3" placeholder="e.g.&#10;1 2&#10;3 4&#10;10 20"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Expected Output (one per line)</label>
+                                <textarea id="expectedOutput" rows="3" placeholder="e.g.&#10;3&#10;7&#10;30"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="submitBtn">➕ Add Problem</button>
+                                <button type="button" class="btn btn-warning" onclick="resetForm()">Reset</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Manage Problems Panel -->
+                <div class="mentor-panel" id="panel-manageProblems">
+                    <div class="panel-header">
+                        <div class="panel-title">📋 Manage Problems</div>
+                        <button class="btn btn-primary" style="padding:0.4rem 0.9rem;font-size:0.8rem"
+                                onclick="showPanel('addProblem', document.querySelector('[onclick*=addProblem]'))">
+                            ➕ Add New
+                        </button>
+                    </div>
+                    <div class="panel-body" style="padding:0;overflow-x:auto">
+                        <table class="m-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Title</th>
+                                    <th>Difficulty</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="problem, iter : ${problems}">
+                                    <td style="color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:0.8rem"
+                                        th:text="${iter.count}"></td>
+                                    <td style="font-weight:600" th:text="${problem.title}"></td>
+                                    <td>
+                                        <span class="difficulty-badge"
+                                              th:classappend="${problem.difficulty == 'EASY' ? 'difficulty-easy' : problem.difficulty == 'MEDIUM' ? 'difficulty-medium' : 'difficulty-hard'}"
+                                              th:text="${problem.difficulty}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="category-tag" th:text="${problem.category}"></span>
+                                    </td>
+                                    <td>
+                                        <div style="display:flex;gap:0.4rem">
+                                            <button class="btn btn-secondary"
+                                                    style="padding:0.3rem 0.7rem;font-size:0.78rem"
+                                                    th:onclick="'editProblem(' + ${problem.id} + ')'">✏️ Edit</button>
+                                            <button class="btn btn-danger"
+                                                    style="padding:0.3rem 0.7rem;font-size:0.78rem;background:transparent;border:1px solid var(--red);color:var(--red)"
+                                                    th:onclick="'deleteProblem(' + ${problem.id} + ', \'' + ${problem.title} + '\')'">🗑</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(problems)}">
+                                    <td colspan="5">
+                                        <div class="empty-state">
+                                            <div class="empty-state-icon">📭</div>
+                                            <p>No problems yet.<br>Click <strong>Add New</strong> to create one.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Student Progress Panel -->
+                <div class="mentor-panel" id="panel-studentProgress">
+                    <div class="panel-header">
+                        <div class="panel-title">🎓 Student Progress</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="progress-grid">
+                            <div class="progress-card">
+                                <div class="progress-card-head top">🏆 Top Performers</div>
+                                <ul>
+                                    <li th:each="s : ${topStudents}">
+                                        <span class="student-name" th:text="${s.username}"></span>
+                                        <span class="student-score score-high" th:text="${s.totalScore + ' pts'}"></span>
+                                    </li>
+                                    <li th:if="${#lists.isEmpty(topStudents)}">
+                                        <div class="empty-state" style="padding:1.5rem">
+                                            <div class="empty-state-icon">🌱</div>
+                                            <p>No top performers yet</p>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="progress-card">
+                                <div class="progress-card-head needs">⚠️ Needs Attention</div>
+                                <ul>
+                                    <li th:each="s : ${strugglingStudents}">
+                                        <span class="student-name" th:text="${s.username}"></span>
+                                        <span class="student-score score-low" th:text="${s.totalScore + ' pts'}"></span>
+                                    </li>
+                                    <li th:if="${#lists.isEmpty(strugglingStudents)}">
+                                        <div class="empty-state" style="padding:1.5rem">
+                                            <div class="empty-state-icon">✅</div>
+                                            <p>All students doing well!</p>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /mentor-content -->
+        </div><!-- /mentor-layout -->
+    </div><!-- /container -->
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+    /* ── helpers ── */
+    function showToast(msg, type) {
+        var t = document.getElementById('toast');
+        t.innerHTML = (type === 'success' ? '✅ ' : '❌ ') + msg;
+        t.className = 'toast ' + type + ' show';
+        setTimeout(function(){ t.className = 'toast'; }, 3500);
+    }
+
+    function showPanel(name, btn) {
+        document.querySelectorAll('.mentor-panel').forEach(function(p){ p.classList.remove('active'); });
+        document.querySelectorAll('.sidebar-nav-item').forEach(function(b){ b.classList.remove('active'); });
+        document.getElementById('panel-' + name).classList.add('active');
+        if (btn) btn.classList.add('active');
+    }
+
+    /* ── auto-open panel from URL param ── */
+    var panelParam = new URLSearchParams(window.location.search).get('panel');
+    if (panelParam) {
+        var btn = document.querySelector('[onclick*="' + panelParam + '"]');
+        showPanel(panelParam, btn);
+    }
+
+    function logout() { localStorage.removeItem('user'); window.location.href = '/'; }
+
+    /* ── avatar initial ── */
+    var uname = /*[[${username}]]*/ 'Mentor';
+    var avatarEl = document.getElementById('mentorAvatar');
+    if (avatarEl && uname) avatarEl.textContent = uname.charAt(0).toUpperCase();
+
+    /* ── form reset ── */
+    function resetForm() {
+        document.getElementById('problemForm').reset();
+        delete document.getElementById('problemForm').dataset.editId;
+        document.getElementById('addPanelTitle').textContent = '➕ Add New Problem';
+        document.getElementById('submitBtn').textContent = '➕ Add Problem';
+    }
+
+    /* ── submit problem ── */
+    function submitProblem(e) {
+        e.preventDefault();
+        var form    = document.getElementById('problemForm');
+        var editId  = form.dataset.editId;
+        var isEdit  = !!editId;
+        var url     = isEdit ? '/api/admin/problems/' + editId : '/api/admin/problems';
+        var method  = isEdit ? 'PUT' : 'POST';
+        var data = {
+            title:          document.getElementById('title').value,
+            description:    document.getElementById('description').value,
+            difficulty:     document.getElementById('difficulty').value,
+            category:       document.getElementById('category').value,
+            testCases:      document.getElementById('testInput').value,
+            expectedOutput: document.getElementById('expectedOutput').value
+        };
+
+        document.getElementById('submitBtn').textContent = 'Saving…';
+        document.getElementById('submitBtn').disabled = true;
+
+        fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+            .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+            .then(function(result) {
+                if (result.success !== false) {
+                    showToast(isEdit ? 'Problem updated successfully!' : 'Problem added successfully!', 'success');
+                    resetForm();
+                    setTimeout(function(){ location.reload(); }, 1500);
+                } else {
+                    showToast('Error: ' + (result.message || 'Something went wrong'), 'error');
+                }
+            })
+            .catch(function(err){ showToast('Error ' + err + ': Could not save problem.', 'error'); })
+            .finally(function(){
+                document.getElementById('submitBtn').textContent = isEdit ? '✔ Update Problem' : '➕ Add Problem';
+                document.getElementById('submitBtn').disabled = false;
+            });
+    }
+
+    /* ── edit problem ── */
+    function editProblem(id) {
+        fetch('/api/problems/' + id)
+            .then(function(r){ return r.json(); })
+            .then(function(p) {
+                document.getElementById('title').value          = p.title || '';
+                document.getElementById('description').value    = p.description || '';
+                document.getElementById('difficulty').value     = p.difficulty || 'EASY';
+                document.getElementById('category').value       = p.category || '';
+                document.getElementById('testInput').value      = p.testCases || '';
+                document.getElementById('expectedOutput').value = p.expectedOutput || '';
+
+                var form = document.getElementById('problemForm');
+                form.dataset.editId = id;
+                document.getElementById('addPanelTitle').textContent = '✏️ Edit Problem';
+                document.getElementById('submitBtn').textContent = '✔ Update Problem';
+
+                showPanel('addProblem', document.querySelector('[onclick*="addProblem"]'));
+            })
+            .catch(function(){ showToast('Could not load problem data.', 'error'); });
+    }
+
+    /* ── delete problem ── */
+    function deleteProblem(id, title) {
+        if (!confirm('Delete "' + title + '"? This cannot be undone.')) return;
+        fetch('/api/admin/problems/' + id, { method: 'DELETE' })
+            .then(function(r) {
+                if (r.ok) { showToast('Problem deleted.', 'success'); setTimeout(function(){ location.reload(); }, 1200); }
+                else showToast('Could not delete problem.', 'error');
+            })
+            .catch(function(){ showToast('Network error.', 'error'); });
+    }
+</script>
+</body>
+</html>

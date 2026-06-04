@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Coding Arena</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-page  { min-height: calc(100vh - 62px); padding: 2.5rem 0; position: relative; z-index: 1; }
+        .admin-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
+        @media(max-width:900px){ .admin-stats{ grid-template-columns:repeat(2,1fr); } }
+        @media(max-width:500px){ .admin-stats{ grid-template-columns:1fr; } }
+
+        .admin-layout { display: grid; grid-template-columns: 240px 1fr; gap: 1.5rem; align-items: start; }
+        @media(max-width:900px){ .admin-layout{ grid-template-columns:1fr; } }
+
+        /* sidebar — mirrors mentor-styles.css sidebar */
+        .admin-sidebar { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; position: sticky; top: 80px; }
+        .sidebar-profile { padding: 1.75rem 1.25rem 1.25rem; text-align: center; border-bottom: 1px solid var(--border); background: var(--bg-secondary); }
+        .admin-avatar {
+            width: 64px; height: 64px; border-radius: 18px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; font-weight: 800; color: #fff;
+            margin: 0 auto 0.75rem; box-shadow: 0 8px 24px var(--accent-glow);
+        }
+        .admin-name  { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
+        .admin-badge {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            background: var(--accent-glow); color: var(--accent);
+            padding: 0.2rem 0.7rem; border-radius: 100px;
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .sidebar-menu { padding: 0.75rem; }
+        .menu-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem 1rem; border-radius: 10px;
+            font-size: 0.875rem; font-weight: 500;
+            color: var(--text-secondary); cursor: pointer;
+            border: none; background: transparent;
+            width: 100%; text-align: left; font-family: inherit; transition: all 0.2s;
+        }
+        .menu-item:hover  { background: var(--bg-hover); color: var(--text-primary); }
+        .menu-item.active { background: var(--accent-glow); color: var(--accent); }
+        .menu-icon {
+            width: 30px; height: 30px; border-radius: 8px; background: var(--bg-hover);
+            display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;
+        }
+        .menu-item.active .menu-icon { background: var(--accent-glow); }
+
+        /* panels */
+        .admin-panel { display: none; }
+        .admin-panel.active { display: block; }
+        .panel-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .panel-card-head { padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg-secondary); display: flex; align-items: center; justify-content: space-between; }
+        .panel-card-title { font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .panel-card-body  { padding: 1.5rem; }
+
+        /* student table */
+        .student-table-wrap { overflow-x: auto; }
+        .student-table { width: 100%; border-collapse: collapse; }
+        .student-table th { padding: 0.75rem 1.25rem; text-align: left; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); background: var(--bg-secondary); white-space: nowrap; }
+        .student-table td { padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+        .student-table tr:last-child td { border-bottom: none; }
+        .student-table tbody tr { transition: background 0.15s; }
+        .student-table tbody tr:hover td { background: var(--bg-hover); }
+        .s-user   { display: flex; align-items: center; gap: 0.75rem; }
+        .s-avatar { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: #fff; }
+        .s-name   { font-weight: 600; font-size: 0.9rem; }
+        .s-email  { font-size: 0.73rem; color: var(--text-muted); margin-top: 0.1rem; }
+        .score-zero { color: var(--text-muted); }
+        .score-low  { color: var(--orange); }
+        .score-mid  { color: var(--accent); }
+        .score-high { color: var(--green); }
+        .s-bar-wrap { width: 90px; height: 5px; background: var(--border); border-radius: 100px; overflow: hidden; }
+        .s-bar      { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--accent), var(--purple)); transition: width 0.4s; }
+
+        /* problems table */
+        .p-table { width: 100%; border-collapse: collapse; }
+        .p-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--bg-secondary); }
+        .p-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+        .p-table tr:last-child td { border-bottom: none; }
+        .p-table tbody tr:hover td { background: var(--bg-hover); }
+
+        /* form — mirrors mentor-styles.css mentor-form */
+        .admin-form .form-group { margin-bottom: 1rem; }
+        .admin-form label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .admin-form input, .admin-form select, .admin-form textarea { width: 100%; padding: 0.7rem 0.9rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 0.875rem; font-family: inherit; transition: all 0.2s; }
+        .admin-form input::placeholder, .admin-form textarea::placeholder { color: var(--text-muted); }
+        .admin-form input:focus, .admin-form select:focus, .admin-form textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); background: var(--bg-hover); }
+        .admin-form textarea { resize: vertical; min-height: 80px; }
+        .admin-form select option { background: var(--bg-card); }
+        .admin-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media(max-width:600px){ .admin-form .form-row{ grid-template-columns:1fr; } }
+
+        /* search */
+        .search-input { padding: 0.5rem 0.85rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 0.875rem; font-family: inherit; width: 220px; transition: all 0.2s; }
+        .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .search-input::placeholder { color: var(--text-muted); }
+
+        /* toast */
+        .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1.4rem; font-size: 0.875rem; font-weight: 500; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s cubic-bezier(.34,1.56,.64,1); display: flex; align-items: center; gap: 0.6rem; box-shadow: 0 16px 40px rgba(0,0,0,0.4); max-width: 320px; }
+        .toast.show    { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: var(--green); }
+        .toast.error   { border-color: var(--red); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-text">Coding Arena</span>
+        </a>
+        <div class="nav-links">
+            <a href="/admin-dashboard" class="nav-link active">Admin</a>
+            <a href="/problems?role=ADMIN" class="nav-link">Problems</a>
+            <a href="#" onclick="switchTab('addProblem', document.querySelector('[onclick*=addProblem]')); window.scrollTo(0,0);" class="nav-link">Add Problem</a>
+            <a href="/leaderboard?role=ADMIN" class="nav-link">Leaderboard</a>
+            <a href="/" class="nav-link">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<main class="admin-page">
+    <div class="container">
+
+        <!-- Stats — same stat-card pattern as student dashboard & mentor dashboard -->
+        <div class="admin-stats">
+            <div class="stat-card stat-blue">
+                <div class="stat-card-top"><span class="stat-label">Total Users</span><div class="stat-icon">👥</div></div>
+                <div class="stat-num" id="statUsers">—</div>
+            </div>
+            <div class="stat-card stat-purple">
+                <div class="stat-card-top"><span class="stat-label">Total Problems</span><div class="stat-icon">📋</div></div>
+                <div class="stat-num" id="statProblems">—</div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-card-top"><span class="stat-label">Students</span><div class="stat-icon">🎓</div></div>
+                <div class="stat-num" id="statStudents">—</div>
+            </div>
+            <div class="stat-card stat-orange">
+                <div class="stat-card-top"><span class="stat-label">Total Submissions</span><div class="stat-icon">📤</div></div>
+                <div class="stat-num" id="statSubmissions">—</div>
+            </div>
+        </div>
+
+        <div class="admin-layout">
+
+            <!-- Sidebar -->
+            <div class="admin-sidebar">
+                <div class="sidebar-profile">
+                    <div class="admin-avatar">A</div>
+                    <div class="admin-name">Administrator</div>
+                    <span class="admin-badge">🔑 Admin</span>
+                </div>
+                <nav class="sidebar-menu">
+                    <button class="menu-item active" onclick="switchTab('students', this)">
+                        <div class="menu-icon">🎓</div> Student Progress
+                    </button>
+                    <button class="menu-item" onclick="switchTab('addProblem', this)">
+                        <div class="menu-icon">➕</div> Add Problem
+                    </button>
+                    <button class="menu-item" onclick="switchTab('problems', this)">
+                        <div class="menu-icon">📋</div> All Problems
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Content -->
+            <div>
+
+                <!-- ── Student Progress ── -->
+                <div class="admin-panel active" id="tab-students">
+                    <div class="panel-card">
+                        <div class="panel-card-head">
+                            <div class="panel-card-title">🎓 Student Progress</div>
+                            <input class="search-input" type="text" placeholder="🔍  Search students…" oninput="filterStudents(this.value)">
+                        </div>
+                        <div class="student-table-wrap">
+                            <table class="student-table" id="studentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Student</th>
+                                        <th>Score</th>
+                                        <th>Progress</th>
+                                        <th>Solved</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsGrid">
+                                    <tr><td colspan="6" class="no-data">Loading students…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Add Problem ── -->
+                <div class="admin-panel" id="tab-addProblem">
+                    <div class="panel-card">
+                        <div class="panel-card-head">
+                            <div class="panel-card-title" id="formPanelTitle">➕ Add New Problem</div>
+                        </div>
+                        <div class="panel-card-body">
+                            <form class="admin-form" id="addProblemForm" onsubmit="submitProblem(event)">
+                                <div class="form-group">
+                                    <label>Problem Title</label>
+                                    <input type="text" id="title" placeholder="e.g. Two Sum" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <textarea id="description" rows="4" placeholder="Describe the problem clearly…" required></textarea>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Difficulty</label>
+                                        <select id="difficulty">
+                                            <option value="EASY">🟢 Easy</option>
+                                            <option value="MEDIUM">🟡 Medium</option>
+                                            <option value="HARD">🔴 Hard</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Category</label>
+                                        <input type="text" id="category" placeholder="e.g. Array, String, Math">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Test Cases (one per line)</label>
+                                    <textarea id="testCases" rows="3" placeholder="e.g.&#10;1 2&#10;3 4&#10;10 20"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Expected Output (one per line)</label>
+                                    <textarea id="expectedOutput" rows="3" placeholder="e.g.&#10;3&#10;7&#10;30"></textarea>
+                                </div>
+                                <div style="display:flex;gap:0.75rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+                                    <button type="submit" class="btn btn-primary" id="formSubmitBtn">➕ Add Problem</button>
+                                    <button type="button" class="btn btn-warning" onclick="resetProblemForm()">Reset</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── All Problems ── -->
+                <div class="admin-panel" id="tab-problems">
+                    <div class="panel-card">
+                        <div class="panel-card-head">
+                            <div class="panel-card-title">📋 All Problems</div>
+                            <button class="btn btn-primary" style="padding:0.4rem 0.9rem;font-size:0.8rem"
+                                    onclick="switchTab('addProblem', document.querySelector('[onclick*=addProblem]'))">
+                                ➕ Add New
+                            </button>
+                        </div>
+                        <div style="overflow-x:auto">
+                            <table class="p-table" id="problemsTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Title</th>
+                                        <th>Difficulty</th>
+                                        <th>Category</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="problemsBody">
+                                    <tr><td colspan="5" class="no-data">Loading…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /content -->
+        </div><!-- /admin-layout -->
+    </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/admin-dashboard.js"></script>
+</body>
+</html>

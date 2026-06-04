@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problems - Live Coding Arena</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-logo">Live Coding Arena - Student</h1>
+            <div class="nav-links">
+                <a href="/student-problems" class="nav-link">Problems</a>
+                <a href="/leaderboard" class="nav-link">Leaderboard</a>
+                <a href="/" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="problems-page">
+        <div class="container">
+            <h1>Coding Problems</h1>
+            
+            <div class="filters">
+                <select id="difficultyFilter">
+                    <option value="">All Difficulties</option>
+                    <option value="EASY">Easy</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HARD">Hard</option>
+                </select>
+                
+                <select id="categoryFilter">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+
+            <div id="problemsGrid" class="problems-grid">
+                <!-- Problems will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/student-problems.js"></script>
+</body>
+</html>

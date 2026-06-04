@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problems — Coding Arena</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-text">Coding Arena</span>
+        </a>
+        <div class="nav-links">
+            <a href="#" onclick="navDashboard()" class="nav-link" th:if="${userRole != 'ADMIN'}">Dashboard</a>
+            <a href="#" onclick="nav('/admin-dashboard')" class="nav-link" th:if="${userRole == 'ADMIN'}">Admin</a>
+            <a href="#" onclick="nav('/problems')" class="nav-link active">Problems</a>
+            <a href="#" onclick="nav('/mentor?panel=addProblem')" class="nav-link" th:if="${userRole == 'MENTOR'}">Add Problem</a>
+            <a href="#" onclick="nav('/editor')" class="nav-link" th:if="${userRole == 'STUDENT'}" id="editorLink">Editor</a>
+            <a href="#" onclick="nav('/leaderboard')" class="nav-link">Leaderboard</a>
+            <a href="/" class="nav-link">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<main class="problems-page">
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Problem Bank</h1>
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filter('ALL', this)">All</button>
+                <button class="filter-tab easy" onclick="filter('EASY', this)">Easy</button>
+                <button class="filter-tab medium" onclick="filter('MEDIUM', this)">Medium</button>
+                <button class="filter-tab hard" onclick="filter('HARD', this)">Hard</button>
+            </div>
+        </div>
+
+        <div class="problems-grid" id="problemsGrid">
+            <div th:each="problem, iter : ${problems}" class="problem-card" th:attr="data-difficulty=${problem.difficulty}">
+                <div class="problem-card-top">
+                    <span class="problem-num" th:text="'#' + (${iter.count < 10 ? '0' : ''}) + ${iter.count}">#01</span>
+                    <span class="difficulty-badge" 
+                          th:classappend="${problem.difficulty == 'EASY' ? 'difficulty-easy' : problem.difficulty == 'MEDIUM' ? 'difficulty-medium' : 'difficulty-hard'}"
+                          th:text="${problem.difficulty}"></span>
+                </div>
+                <h3 th:text="${problem.title}"></h3>
+                <p th:text="${problem.description}"></p>
+                <div class="problem-card-footer">
+                    <span class="category-tag" th:text="${problem.category}"></span>
+                    <button th:if="${userRole == 'STUDENT'}" 
+                            th:onclick="'solveProblem(' + ${problem.id} + ')'" 
+                            class="btn btn-primary" 
+                            style="padding:0.35rem 0.9rem;font-size:0.8rem">
+                        Solve →
+                    </button>
+                </div>
+            </div>
+            <p th:if="${problems == null or #lists.isEmpty(problems)}" class="no-data">No problems available.</p>
+        </div>
+    </div>
+</main>
+
+<script>
+    const p = new URLSearchParams(window.location.search);
+    const username = /*[[${username}]]*/ p.get('username') || 'student';
+    const role     = /*[[${userRole}]]*/ p.get('role')     || 'STUDENT';
+
+    function nav(path) { window.location.href = path + '?role=' + role + '&username=' + username; }
+
+    function navDashboard() {
+        if (role === 'MENTOR') nav('/mentor');
+        else if (role === 'ADMIN') nav('/admin-dashboard');
+        else nav('/dashboard');
+    }
+    // Hide Editor link for non-students
+    if (role !== 'STUDENT') {
+        const editorLink = document.getElementById('editorLink');
+        if (editorLink) editorLink.style.display = 'none';
+    }
+
+    function solveProblem(id) {
+        window.location.href = '/editor?problemId=' + id + '&role=' + role + '&username=' + username;
+    }
+
+    function filter(diff, btn) {
+        var cards = document.querySelectorAll('.problem-card');
+        var tabs  = document.querySelectorAll('.filter-tab');
+
+        tabs.forEach(function(t){ t.classList.remove('active'); });
+        btn.classList.add('active');
+
+        cards.forEach(function(card) {
+            var cardDiff = card.getAttribute('data-difficulty');
+            if (diff === 'ALL' || cardDiff === diff) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+</body>
+</html>

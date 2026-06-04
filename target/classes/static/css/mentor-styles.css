@@ -1,0 +1,327 @@
+/* ── MENTOR DASHBOARD — uses main CSS variables ── */
+
+.mentor-page { min-height: calc(100vh - 62px); padding: 2.5rem 0; position: relative; z-index: 1; }
+
+/* ── Sidebar layout ── */
+.mentor-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 900px) { .mentor-layout { grid-template-columns: 1fr; } }
+
+/* ── Sidebar ── */
+.mentor-sidebar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    position: sticky;
+    top: 80px;
+}
+
+.sidebar-profile {
+    padding: 1.75rem 1.25rem 1.25rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.sidebar-avatar {
+    width: 64px; height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: #fff;
+    margin: 0 auto 0.75rem;
+    box-shadow: 0 8px 24px #7c3aed30;
+}
+
+.sidebar-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+
+.sidebar-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #7c3aed18;
+    color: #7c3aed;
+    padding: 0.2rem 0.7rem;
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-nav { padding: 0.75rem; }
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+}
+
+.sidebar-nav-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.sidebar-nav-item.active {
+    background: var(--accent-glow);
+    color: var(--accent);
+}
+
+.sidebar-nav-item.active .nav-item-icon { filter: none; }
+
+.nav-item-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--bg-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.sidebar-nav-item.active .nav-item-icon {
+    background: var(--accent-glow);
+}
+
+/* ── Main content area ── */
+.mentor-content { display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* ── Stat cards row ── */
+.mentor-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+@media (max-width: 700px) { .mentor-stats { grid-template-columns: 1fr; } }
+
+/* ── Section panel ── */
+.mentor-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: none;
+}
+
+.mentor-panel.active { display: block; }
+
+.panel-header {
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.panel-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.panel-body { padding: 1.5rem; }
+
+/* ── Problem form ── */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+.mentor-form .form-group { margin-bottom: 1rem; }
+
+.mentor-form label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mentor-form input,
+.mentor-form select,
+.mentor-form textarea {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.mentor-form input::placeholder,
+.mentor-form textarea::placeholder { color: var(--text-muted); }
+
+.mentor-form input:focus,
+.mentor-form select:focus,
+.mentor-form textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: var(--bg-hover);
+}
+
+.mentor-form textarea { resize: vertical; min-height: 90px; }
+
+.mentor-form select option { background: var(--bg-card); }
+
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+}
+
+/* ── Problems table ── */
+.m-table { width: 100%; border-collapse: collapse; }
+
+.m-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.m-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+}
+
+.m-table tr:last-child td { border-bottom: none; }
+.m-table tbody tr { transition: background 0.15s; }
+.m-table tbody tr:hover td { background: var(--bg-hover); }
+
+/* ── Student progress cards ── */
+.progress-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+@media (max-width: 700px) { .progress-grid { grid-template-columns: 1fr; } }
+
+.progress-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.progress-card-head {
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.progress-card-head.top    { color: var(--green);  }
+.progress-card-head.needs  { color: var(--orange); }
+
+.progress-card ul { list-style: none; padding: 0; margin: 0; }
+
+.progress-card li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+    transition: background 0.15s;
+}
+
+.progress-card li:last-child { border-bottom: none; }
+.progress-card li:hover { background: var(--bg-hover); }
+
+.student-name { font-weight: 600; }
+.student-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.score-high  { color: var(--green); }
+.score-low   { color: var(--orange); }
+
+/* ── Empty state ── */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.empty-state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.empty-state p { font-size: 0.9rem; line-height: 1.7; }
+
+/* ── Notification toast ── */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 9999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    max-width: 340px;
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: var(--green); }
+.toast.error   { border-color: var(--red); }

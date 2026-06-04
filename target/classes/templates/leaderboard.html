@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard — Coding Arena</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-text">Coding Arena</span>
+        </a>
+        <div class="nav-links">
+            <a href="#" onclick="navDashboard()" class="nav-link" th:if="${userRole != 'ADMIN'}">Dashboard</a>
+            <a href="#" onclick="nav('/admin-dashboard')" class="nav-link" th:if="${userRole == 'ADMIN'}">Admin</a>
+            <a href="#" onclick="nav('/problems')" class="nav-link">Problems</a>
+            <a href="#" onclick="nav('/mentor?panel=addProblem')" class="nav-link" th:if="${userRole == 'MENTOR'}">Add Problem</a>
+            <a href="#" onclick="nav('/editor')" class="nav-link" th:if="${userRole == 'STUDENT'}" id="editorLink">Editor</a>
+            <a href="#" onclick="nav('/leaderboard')" class="nav-link active">Leaderboard</a>
+            <a href="/" class="nav-link">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<main class="leaderboard-page">
+    <div class="container">
+
+        <div class="page-header" style="margin-bottom:1.5rem">
+            <h1 class="page-title">🏆 Leaderboard</h1>
+            <span style="color:var(--text-muted);font-size:0.875rem">Top coders ranked by total score</span>
+        </div>
+
+        <div class="leaderboard-wrapper">
+            <div class="leaderboard-head">
+                <h2>Global Rankings</h2>
+            </div>
+            <table class="lb-table">
+                <thead>
+                    <tr>
+                        <th style="width:80px">Rank</th>
+                        <th>Coder</th>
+                        <th style="text-align:right">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user, iter : ${users}" th:if="${user.totalScore > 0}">
+                        <td>
+                            <span th:if="${iter.count == 1}" class="lb-rank lb-rank-1">🥇</span>
+                            <span th:if="${iter.count == 2}" class="lb-rank lb-rank-2">🥈</span>
+                            <span th:if="${iter.count == 3}" class="lb-rank lb-rank-3">🥉</span>
+                            <span th:if="${iter.count > 3}"  class="lb-rank" th:text="${iter.count}"></span>
+                        </td>
+                        <td>
+                            <div class="lb-username">
+                                <div class="lb-avatar" th:text="${#strings.toUpperCase(#strings.substring(user.username,0,1))}">U</div>
+                                <span th:text="${user.username}"></span>
+                            </div>
+                        </td>
+                        <td class="lb-score" th:text="${user.totalScore + ' pts'}" style="text-align:right"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(users)}">
+                        <td colspan="3" class="no-data">No scores yet — be the first!</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</main>
+
+<script>
+    const p = new URLSearchParams(window.location.search);
+    const username = /*[[${username}]]*/ p.get('username') || 'student';
+    const role     = /*[[${userRole}]]*/ p.get('role')     || 'STUDENT';
+    function nav(path) { window.location.href = path + '?role=' + role + '&username=' + username; }
+    function navDashboard() {
+        if (role === 'MENTOR') nav('/mentor');
+        else if (role === 'ADMIN') nav('/admin-dashboard');
+        else nav('/dashboard');
+    }
+    // Hide Editor link for non-students
+    if (role !== 'STUDENT') {
+        const editorLink = document.getElementById('editorLink');
+        if (editorLink) editorLink.style.display = 'none';
+    }
+</script>
+</body>
+</html>
